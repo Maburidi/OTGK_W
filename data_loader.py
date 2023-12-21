@@ -8,7 +8,7 @@ from utils import *
 
 
 
-def load_local_data2(data_path,name,one_hot=False,attributes=True,use_node_deg=False,wl=0):
+def load_local_data(data_path,name,one_hot=False,attributes=True,use_node_deg=False,wl=0):
     if name=='mutag':
         path=data_path+'/MUTAG_2/'
         dataset=build_MUTAG_dataset(path,one_hot=one_hot)
@@ -18,11 +18,31 @@ def load_local_data2(data_path,name,one_hot=False,attributes=True,use_node_deg=F
             dataset=build_ENZYMES_dataset(path,type_attr='real')
         else:
             dataset=build_ENZYMES_dataset(path)
+    
     if name=='ptc':
         path=data_path+'/PTC_MR/'
         dataset=build_PTC_dataset(path,one_hot=one_hot)
+    if name=='protein':
+        path=data_path+'/PROTEINS_full/'
+        if attributes:
+            dataset=build_PROTEIN_dataset(path,type_attr='real',use_node_deg=use_node_deg)
+        else:
+            dataset=build_PROTEIN_dataset(path)
+    if name=='bzr':
+        path=data_path+'/BZR/'
+        if attributes:
+            dataset=build_BZR_dataset(path,type_attr='real',use_node_deg=use_node_deg)
+        else:
+            dataset=build_BZR_dataset(path)
+    if name=='cox2':
+        path=data_path+'/COX2/'
+        if attributes:
+            dataset=build_COX2_dataset(path,type_attr='real',use_node_deg=use_node_deg)
+        else:
+            dataset=build_COX2_dataset(path)
 
     X,y=zip(*dataset)
+    
     if wl!=0:
         X=label_wl_dataset(X,h=wl)
     return np.array(X),np.array(y)
