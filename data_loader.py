@@ -12,8 +12,15 @@ def load_local_data(data_path,name,one_hot=False,attributes=True,use_node_deg=Fa
     if name=='mutag':
         path=data_path+'/MUTAG_2/'
         dataset=build_MUTAG_dataset(path,one_hot=one_hot)
-
-
+    if name=='enzymes':
+        path=data_path+'/ENZYMES_2/'
+        if attributes:
+            dataset=build_ENZYMES_dataset(path,type_attr='real')
+        else:
+            dataset=build_ENZYMES_dataset(path)
+    if wl!=0:
+        X=label_wl_dataset(X,h=wl)
+    return np.array(X),np.array(y)
 
 
 

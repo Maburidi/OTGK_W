@@ -1,20 +1,26 @@
-### Graph_model
-
-
 import networkx as nx
+import matplotlib.pyplot as plt
+import itertools
 import numpy as np
 import ot
 import time
 from scipy.sparse.csgraph import shortest_path
 from scipy import sparse
-
+import copy
+import matplotlib.colors as mcol
+from matplotlib import cm
 
 class NoAttrMatrix(Exception):
     pass
 
+class NoPathException(Exception):
+    pass
 
+"""
+Summarizes all the methods and classes related to graphs
+"""
 
-
+#%%
 class Graph():
     """ Graph is a class that model all the graphs used in the experiments.
     
@@ -192,4 +198,102 @@ class Graph():
             raise NoAttrMatrix
             
 #%%
+
+
+def wl_labeling(graph,h=2,tohash=True):
+    """ Computes the Weisfeler-Lehman labeling for all nodes
+    Parameters
+    ----------
+    graph : Graph
+            The Graph to relabel
+    h : integer
+          The number of iteration of the Weisfeler-Lehman coloring. See [4]
+    tohash : bool, optionnal
+          Wether to hash the concatenated labeled
+    Returns
+    -------
+    graphs : Graph,
+        The relabeled graph
+
+    References
+    ----------
+    .. [4] Nils M. Kriege and Pierre{-}Louis Giscard and Richard C. Wilson
+        "On Valid Optimal Assignment Kernels and Applications to Graph Classification"
+        Advances in Neural Information Processing Systems 29 (NIPS). 2016.
+
+    """
+    niter=1
+    final_graph=nx.Graph(graph)
+
+    graph_relabel,inv_relabel_dict_=relabel_graph_order(final_graph)
+    l_aux = list(nx.get_node_attributes(graph_relabel,'attr_name').values())
+    labels = np.zeros(len(l_aux), dtype=np.int32)
+
+    adjency_list = list([list(x[1].keys()) for x in graph_relabel.adjacency()]) #adjency list à l'ancienne comme version 1.0 de networkx
+    for j in range(len(l_aux)):
+        labels[j] = l_aux[j]
+
+    new_labels = copy.deepcopy(l_aux)
+
+    while niter<=h:
+
+        labeled_graph=nx.Graph(final_graph)
+
+        graph_relabel,inv_relabel_dict_=relabel_graph_order(final_graph)
+
+        l_aux = list(nx.get_node_attributes(graph_relabel,'attr_name'+str(niter-1)).values())
+
+        adjency_list = list([list(x[1].keys()) for x in graph_relabel.adjacency()]) #adjency list à l'ancienne comme version 1.0 de networkx
+
+        for v in range(len(adjency_list)):
+        # form a multiset label of the node v of the i'th graph
+        # and convert it to a string
+
+            prev_neigh=np.sort([labels[adjency_list[v]]][-1])
+
+            long_label = np.concatenate((np.array([[labels[v]][-1]]),prev_neigh))
+            long_label_string = ''.join([str(x) for x in long_label])
+            #print('Type_labels before',type(labels))
+            new_labels[v] =long_label_string
+            #print('Type_labels after',type(labels))
+
+        labels = np.array(copy.deepcopy(new_labels))
+
+        dict_={inv_relabel_dict_[i]:labels[i] for i in range(len(labels))}
+
+        nx.set_node_attributes(labeled_graph,dict_,'attr_name'+str(niter))
+        niter+=1
+        final_graph=nx.Graph(labeled_graph)
+
+    dict_values={} # pas sûr d'ici niveau de l'ordre des trucs
+    for k,v in final_graph.nodes().items():
+        hashed=sorted([str(x) for x in v.values()], key=len)
+
+        if tohash :
+            dict_values[k]=np.array([hash(x) for x in hashed])
+        else:
+            dict_values[k]=np.array(hashed)
+
+    graph2=nx.Graph(graph)
+    nx.set_node_attributes(graph2,dict_values,'attr_name')
+
+    return graph2
+
+
+
+def relabel_graph_order(graph):
+
+    relabel_dict_={}
+    graph_node_list=list(graph.nodes())
+    for i in range(len(graph_node_list)):
+        relabel_dict_[graph_node_list[i]]=i
+        i+=1
+
+    inv_relabel_dict_={v:k for k,v in relabel_dict_.items()}
+
+    graph_relabel=nx.relabel_nodes(graph,relabel_dict_)
+
+    return graph_relabel,inv_relabel_dict_
+
+
 
