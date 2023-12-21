@@ -77,3 +77,24 @@ def build_ENZYMES_dataset(path,type_attr='label',use_node_deg=False):
 
     return data
 
+def build_PTC_dataset(path,one_hot=False):
+    graphs=graph_label_list(path,'PTC_MR_graph_labels.txt')
+    adjency=compute_adjency(path,'PTC_MR_A.txt')
+    data_dict=graph_indicator(path,'PTC_MR_graph_indicator.txt')
+    node_dic=node_labels_dic(path,'PTC_MR_node_labels.txt') # ya aussi des nodes attributes ! The fuck ?
+    data=[]
+    for i in graphs:
+        g=Graph()
+        for node in data_dict[i[0]]:
+            g.name=i[0]
+            g.add_vertex(node)
+            if one_hot:
+                attr=indices_to_one_hot(node_dic[node],18)
+                g.add_one_attribute(node,attr)
+            else:
+                g.add_one_attribute(node,node_dic[node])
+            for node2 in adjency[node]:
+                g.add_edge((node,node2))
+        data.append((g,i[1]))
+
+    return data
