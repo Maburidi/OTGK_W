@@ -18,6 +18,7 @@ def load_local_data(data_path,name,one_hot=False,attributes=True,use_node_deg=Fa
             dataset=build_ENZYMES_dataset(path,type_attr='real')
         else:
             dataset=build_ENZYMES_dataset(path)
+    X,y=zip(*dataset)
     if wl!=0:
         X=label_wl_dataset(X,h=wl)
     return np.array(X),np.array(y)
