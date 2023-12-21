@@ -122,3 +122,30 @@ def build_PTC_dataset(path,one_hot=False):
         data.append((g,i[1]))
 
     return data
+
+
+def build_PROTEIN_dataset(path,type_attr='label',use_node_deg=False):
+    if type_attr=='label':
+        node_dic=node_labels_dic(path,'PROTEINS_full_node_labels.txt') # A voir pour les attributes
+    if type_attr=='real':
+        node_dic=node_attr_dic(path,'PROTEINS_full_node_attributes.txt')
+    graphs=graph_label_list(path,'PROTEINS_full_graph_labels.txt')
+    adjency=compute_adjency(path,'PROTEINS_full_A.txt')
+    data_dict=graph_indicator(path,'PROTEINS_full_graph_indicator.txt')
+    data=[]
+    for i in graphs:
+        g=Graph()
+        for node in data_dict[i[0]]:
+            g.name=i[0]
+            g.add_vertex(node)
+            if not use_node_deg:
+                g.add_one_attribute(node,node_dic[node])
+            for node2 in adjency[node]:
+                g.add_edge((node,node2))
+        if use_node_deg:
+            node_degree_dict=dict(g.nx_graph.degree())
+            normalized_node_degree_dict={k:v/len(g.nx_graph.nodes()) for k,v in node_degree_dict.items() }
+            nx.set_node_attributes(g.nx_graph,normalized_node_degree_dict,'attr_name')
+        data.append((g,i[1]))
+
+    return data
