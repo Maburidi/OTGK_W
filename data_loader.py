@@ -4,7 +4,7 @@ import ot
 import time
 
 from Graph_model import Graph
-from utlis import *
+from utils import *
 
 
 
