@@ -66,6 +66,17 @@ def node_labels_dic(path,name):
             k=k+1
     return node_dic
 
+def node_attr_dic(path,name):
+    node_dic=dict()
+    with open(path+name) as f:
+        sections = list(per_section(f))
+        k=1
+        for elt in sections[0]:
+            node_dic[k]=[float(x) for x in elt.split(',')]
+            k=k+1
+    return node_dic
+
+
 
 def indices_to_one_hot(number, nb_classes,label_dummy=-1):
     """Convert an iterable of indices to one-hot encoded labels."""
