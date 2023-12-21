@@ -74,11 +74,3 @@ def indices_to_one_hot(number, nb_classes,label_dummy=-1):
         return np.eye(nb_classes)[number]
 
 
-
-def label_wl_dataset(X,h):
-    X2=[]
-    for x in X:
-        x2=Graph()
-        x2.nx_graph=wl_labeling(x.nx_graph,h=2)
-        X2.append(x2)
-    return X2
